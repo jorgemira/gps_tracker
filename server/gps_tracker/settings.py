@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     # Third-Party Apps
     'rest_framework',
     'django_filters',
+    'rest_framework.authtoken',
 
     # Local Apps
     'gps_tracker.gps_tracker'
@@ -121,8 +122,11 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework.authentication.TokenAuthentication",),
+}
