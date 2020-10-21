@@ -41,6 +41,7 @@ INSTALLED_APPS = [
 
     # Third-Party Apps
     'rest_framework',
+    'django_filters',
 
     # Local Apps
     'gps_tracker.gps_tracker'
