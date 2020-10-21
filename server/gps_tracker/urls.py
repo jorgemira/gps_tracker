@@ -6,5 +6,5 @@ router = routers.DefaultRouter()
 router.register(r'locations', views.LocationCreateAPIView)
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path("api/", include(router.urls)),
 ]
