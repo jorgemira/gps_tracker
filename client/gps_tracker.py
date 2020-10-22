@@ -9,7 +9,7 @@ from typing import Tuple, List
 
 import requests
 from requests import RequestException
-# from gps import gps, WATCH_ENABLE , WATCH_NEWSTYLE
+from gps import gps, WATCH_ENABLE , WATCH_NEWSTYLE
 
 
 USERNAME = "asdfg"
@@ -18,17 +18,20 @@ HOST = "http://127.0.0.1:8000"
 AUTH_PATH = "auth"
 API_PATH = "api/locations"
 SLEEP_TIME = 300  # 5 Min
-DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 # TODO: change to "/usr/local/share/gps_tracker/pending_locations.json"
 PENDING_FILE = "pending_locations.json"
 PRECISION = 6
 
 
-def get_coordinates() -> Tuple[float, float]:
-    # TODO: change to real gps stuff
-    #   nx = gpsd.next()
-    #   return nx.lat, nx.lon
-    return 1.2, 4.5
+def get_coordinates(gpsd: gps) -> Tuple[float, float, dt.datetime]:
+    time = dt.datetime.utcnow().strftime(DATETIME_FORMAT)
+    needed = {"lat", "lon", "time"}
+    location = gpsd.next()
+    while needed - set(location) or time > location.time:
+        location = gpsd.next()
+    location_time = dt.datetime.strptime(location.time, DATETIME_FORMAT)
+    return location.lat, location.lon, location_time
 
 
 class Location:
@@ -55,13 +58,13 @@ class Location:
         )
 
     @classmethod
-    def acquire(cls) -> "Location":
+    def acquire(cls, gpsd: gps) -> "Location":
         try:
-            lat, long = get_coordinates()
+            latitude, longitude, time = get_coordinates(gpsd)
         except Exception:
             raise ValueError("Couldn't get GPS coordinates")
 
-        return cls(Decimal(lat), Decimal(long), dt.datetime.now())
+        return cls(Decimal(latitude), Decimal(longitude), time)
 
 
 class Server:
@@ -127,6 +130,7 @@ def append_failed_location(location: Location) -> None:
 def main():
     server = Server()
     failed_locations = True
+    gpsd = gps(mode=WATCH_ENABLE|WATCH_NEWSTYLE)
 
     while True:
         if not server.token:
@@ -139,14 +143,14 @@ def main():
             if failed_locations:
                 failed_locations = send_unsent_locations(server)
 
-            location = Location.acquire()
+            location = Location.acquire(gpsd)
             try:
                 server.post_location(location)
             except RequestException:
                 append_failed_location(location)
                 failed_locations = True
         else:
-            location = Location.acquire()
+            location = Location.acquire(gpsd)
             append_failed_location(location)
             failed_locations = True
 
