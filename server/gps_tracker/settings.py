@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
     'rest_framework.authtoken',
+    'django_extensions',
 
     # Local Apps
     'gps_tracker.gps_tracker'
