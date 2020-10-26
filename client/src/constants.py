@@ -2,8 +2,10 @@
 USERNAME = "asdfg"
 PASSWORD = "asdfg"
 HOST = "http://127.0.0.1:8000"
-AUTH_PATH = "auth"
-API_PATH = "api/locations"
+AUTH_URL: str = f"{HOST}/auth/"
+LOCATIONS_URL: str = f"{HOST}/api/locations/"
+PANIC_URL: str = f"{HOST}/api/panic/"
+
 
 # Format constants
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"

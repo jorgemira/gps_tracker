@@ -16,9 +16,6 @@ logger = get_logger(__name__)
 class Server:
     token: Union[str, None] = None
     panic: bool = False
-    auth_url: str = f"{c.HOST}/{c.AUTH_PATH}/"
-    api_url: str = f"{c.HOST}/{c.API_PATH}/"
-    panic_url: str = f"{c.HOST}/{c.API_PATH}/panic"  # TODO: change me
     panic_mode: bool = False
 
     @classmethod
@@ -26,7 +23,7 @@ class Server:
         """Get and store authentication token from server"""
         contents = {"username": c.USERNAME, "password": c.PASSWORD}
         try:
-            response = requests.post(cls.auth_url, json=contents)
+            response = requests.post(c.AUTH_URL, json=contents)
             if response.status_code != 200:
                 raise ValueError
             content = json.loads(response.content)
@@ -41,7 +38,7 @@ class Server:
         headers = {"Authorization": f"Token {cls.token}"}
         data = location.to_json()
         try:
-            response = requests.post(cls.api_url, json=data, headers=headers)
+            response = requests.post(c.LOCATIONS_URL, json=data, headers=headers)
             if response.status_code != 201:
                 raise ValueError
         except (RequestException, ValueError):
@@ -52,7 +49,7 @@ class Server:
     def is_panic_mode(cls) -> bool:
         headers = {"Authorization": f"Token {cls.token}"}
         try:
-            response = requests.get(cls.panic_url, headers=headers)
+            response = requests.get(c.PANIC_URL, headers=headers)
             content = json.loads(response.content)
             return content["panic"]
         except (RequestException, JSONDecodeError):
