@@ -25,7 +25,7 @@ class Server:
         try:
             response = requests.post(c.AUTH_URL, json=contents)
             if response.status_code != 200:
-                raise ValueError
+                raise ValueError("Log in response was not successful")
             content = json.loads(response.content)
             cls.token = content["token"]
         except (RequestException, JSONDecodeError, ValueError):
@@ -40,7 +40,7 @@ class Server:
         try:
             response = requests.post(c.LOCATIONS_URL, json=data, headers=headers)
             if response.status_code != 201:
-                raise ValueError
+                raise ValueError("Location posting response was not successful")
         except (RequestException, ValueError):
             logger.exception("Error posting location")
             cls.append_failed_location(location)
@@ -60,8 +60,8 @@ class Server:
     def append_failed_location(location: Location) -> None:
         """Append location into PENDING_FILE"""
         try:
-            with open(c.PENDING_FILE, "w+") as file:
-                file.write(location.to_json() + "\n")
+            with open(c.PENDING_FILE, "a") as file:
+                file.write(json.dumps(location.to_json()) + "\n")
         except IOError:
             logger.exception("Cannot append failed location")
 

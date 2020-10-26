@@ -3,7 +3,6 @@ from datetime import datetime
 from decimal import Decimal
 
 from . import constants as c
-from .gpsd import GPSD
 
 
 class Location:
