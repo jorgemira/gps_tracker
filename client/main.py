@@ -4,9 +4,9 @@ from time import sleep
 
 import schedule
 
-from .src import constants as c
-from .src.jobs import panic_job, post_location_job, schedule_job
-from .src.logging import get_logger
+from gps_tracker import constants as c
+from gps_tracker.jobs import panic_job, post_location_job, schedule_job
+from gps_tracker.logging import get_logger
 
 logger = get_logger(__name__)
 
