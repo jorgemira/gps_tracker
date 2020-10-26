@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block page_content %}
+<div class="container">
+    <div class="row">
+        Hiya!!
+    </div>
+    <div class="row vertical-offset-100 mw-100">
+        <div id="mapid"></div>
+    </div>
+</div>
+<script>
+    let redIcon = new L.Icon({
+        iconUrl: 'static/img/marker-icon-red.png',
+        shadowUrl: 'static/img/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+    });
+    let blueIcon = new L.Icon({
+        iconUrl: 'static/img/marker-icon-blue.png',
+        shadowUrl: 'static/img/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+    });
+
+    let lats = [];
+    let longs = [];
+    let map = L.map('mapid');
+    L.tileLayer(
+        'https://{s}.tile.osm.org/{z}/{x}/{y}.png',
+        {attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'}
+    ).addTo(map);
+
+    let token = "d7802339f9ffe9f381ca26b9dd2c19b78a0f8114";
+    let url = "api/locations/";
+    let polyline = new L.Polyline([], {
+        color: 'black',
+        weight: 3,
+        opacity: 0.5,
+        smoothFactor: 1
+    });
+
+    $.ajax({
+        type: "GET",
+        url: url,
+        async: false,
+        beforeSend: function (xhr) {
+            xhr.setRequestHeader("Authorization", "Token " + token)
+        },
+    })
+        .success(function (data) {
+            $.each(data, function (key, value) {
+                lats.push(value.latitude);
+                longs.push(value.longitude);
+                polyline.addLatLng([value.latitude, value.longitude]);
+                let icon = value.panic ? redIcon : blueIcon;
+                L.marker([value.latitude, value.longitude], {icon: icon})
+                    .addTo(map)
+                    .bindPopup(
+                        "Latitude:  " + value.latitude + "<br/>" +
+                        "Longitude: " + value.longitude + "<br/>" +
+                        "Datetime:  " + value.datetime
+                    );
+            })
+        })
+        .fail(function (jqXHR, textStatus) {
+            alert("Error: " + textStatus);
+        })
+    polyline.addTo(map);
+
+    function avg(lst) {
+        let total = 0;
+        for (let i = 0; i < lst.length; i++) {
+            total += parseFloat(lst[i]);
+        }
+        return total / lst.length;
+    }
+
+    map.setView([avg(lats), avg(longs)], 5.5);
+    map.fitBounds([[Math.min(...lats), Math.min(...longs)], [Math.max(...lats), Math.max(...longs)]])
+
+</script>
+{% endblock %}

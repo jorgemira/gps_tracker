@@ -1,20 +1,21 @@
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters
-from rest_framework.authentication import TokenAuthentication
-from rest_framework.generics import ListCreateAPIView
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.viewsets import ViewSetMixin
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.shortcuts import render
 
-from .filters import LocationFilter
-from .models import Location
-from .serializers import LocationSerializer
+from .helpers import is_panic, set_panic_mode
 
 
-class LocationCreateAPIView(ViewSetMixin, ListCreateAPIView):
-    queryset = Location.objects.all()
-    serializer_class = LocationSerializer
-    filter_backends = (filters.OrderingFilter, DjangoFilterBackend)
-    ordering_fields = ("datetime",)
-    filterset_class = LocationFilter
-    permission_classes = (IsAuthenticated,)
-    authentication_classes = (TokenAuthentication,)
+def login(request):
+    return render(request, "login.html", {})
+
+
+# @login_required  # TODO: Move to main
+def show_map(request):
+    return render(request, "map.html", {})
+
+
+@login_required
+def switch_panic(request):
+    mode = not is_panic()
+    set_panic_mode(mode)
+    return JsonResponse({"panic": mode})
